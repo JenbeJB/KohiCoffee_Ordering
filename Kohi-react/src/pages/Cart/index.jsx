@@ -114,7 +114,7 @@ function Cart() {
               <div className="flex items-center gap-4">
                 <img src={isEmpty(product?.img) ? productPlaceholder : product?.img} alt="Product" className="w-20 h-20 object-cover rounded-lg" />
                 <div>
-                  <p className="font-semibold">{product?.name}</p>
+                  <p className="font-semibold">{product?.productName}</p>
                   <p className="text-lg text-gray-700">{n_f(product?.price)} VND</p>
                 </div>
               </div>
