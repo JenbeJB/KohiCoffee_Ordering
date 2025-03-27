@@ -81,10 +81,11 @@ function GetAllProducts() {
               </span>
             )}
             <img
-              src={product.img ?? productPlaceholder}
+              src={product.path ? `https://coffeeshop.ngrok.app/api/products/image${product.path}` : productPlaceholder}
               alt={product.productName}
               className="aspect-square rounded-full object-cover mt-[-50%] w-full mb-3 shadow-lg"
             />
+
             <div className="flex flex-col gap-2 text-center flex-grow">
               <p className="font-black text-lg">{product.productName}</p>
               <p className="text-gray-600 text-sm">{product.description}</p>

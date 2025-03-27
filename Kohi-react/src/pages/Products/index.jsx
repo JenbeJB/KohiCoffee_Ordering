@@ -18,7 +18,7 @@ function Products(props) {
         const response = await fetch("https://coffeeshop.ngrok.app/api/categories?sortBy=CategoryId&isAscending=true&page=1&pageSize=10");
         const data = await response.json();
         console.log("Categories API Response:", data); // Log dữ liệu trả về
-        setCategories(data.items || []); // Kiểm tra xem có "items" không
+        setCategories(data.categories  || []); // Kiểm tra xem có "items" không
       } catch (error) {
         console.error("Error fetching categories:", error);
         setCategories([]);
@@ -59,12 +59,13 @@ function Products(props) {
     </NavLink>
   </li>
   {categories?.map((category) => (
-    <li key={category.CategoryId}>
-      <NavLink to={`/products/category/${category.CategoryId}`} className={({ isActive }) => isActive ? "text-white bg-primary px-4 py-2 rounded-full shadow-md" : "text-gray-600"}>
-        <CategoryName categoryId={category.CategoryId} /> {/* Dùng component lấy tên từ API */}
-      </NavLink>
-    </li>
-  ))}
+  <li key={category.categoryId}>
+    <NavLink to={`/products/category/${category.categoryId}`} 
+      className={({ isActive }) => isActive ? "text-white bg-primary px-4 py-2 rounded-full shadow-md" : "text-gray-600"}>
+      <CategoryName categoryId={category.categoryId} />  {/* Dùng component để lấy tên từ API */}
+    </NavLink>
+  </li>
+))}
 </nav>
 
           {/* Filters */}
@@ -78,12 +79,12 @@ function Products(props) {
               Giá {searchParams.get("sortBy") === "price" ? (searchParams.get("order") === "asc" ? "⬆️" : "⬇️") : ""}
             </button>
             <button
-              onClick={() => handleFilterChange("name")}
+              onClick={() => handleFilterChange("productName")}
               className={`px-6 py-2 rounded-full shadow-md transition-all duration-300 ${
-                searchParams.get("sortBy") === "name" ? "bg-primary text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                searchParams.get("sortBy") === "productName" ? "bg-primary text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              Tên {searchParams.get("sortBy") === "name" ? (searchParams.get("order") === "asc" ? "⬆️" : "⬇️") : ""}
+              Tên {searchParams.get("sortBy") === "productName" ? (searchParams.get("order") === "asc" ? "⬆️" : "⬇️") : ""}
             </button>
           </div>
 

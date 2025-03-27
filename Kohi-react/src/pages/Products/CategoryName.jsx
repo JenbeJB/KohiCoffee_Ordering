@@ -1,26 +1,24 @@
 import React, { useEffect, useState } from "react";
 
 const CategoryName = ({ categoryId }) => {
-  const [categoryName, setCategoryName] = useState("Đang tải...");
+  const [categoryName, setCategoryName] = useState("Loading...");
 
   useEffect(() => {
-    const fetchCategoryName = async () => {
+    const fetchCategory = async () => {
       try {
-        const response = await fetch(`https://coffeeshop.ngrok.app/api/category/${categoryId}`);
+        const response = await fetch(`https://coffeeshop.ngrok.app/api/categories/${categoryId}`);
         const data = await response.json();
-        setCategoryName(data.categoryName || "Không có tên");
+        setCategoryName(data.categoryName || "Unknown"); // Cập nhật đúng field
       } catch (error) {
-        console.error("Lỗi khi lấy danh mục:", error);
-        setCategoryName("Lỗi tải danh mục");
+        console.error(`Error fetching category ${categoryId}:`, error);
+        setCategoryName("Error");
       }
     };
 
-    if (categoryId) {
-      fetchCategoryName();
-    }
+    fetchCategory();
   }, [categoryId]);
 
-  return <span>{categoryName}</span>;
+  return <>{categoryName}</>;
 };
 
 export default CategoryName;
