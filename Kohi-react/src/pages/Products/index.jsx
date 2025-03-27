@@ -15,7 +15,7 @@ function Products(props) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("https://coffeeshop.ngrok.app/api/category?sortBy=CategoryId&isAscending=true&page=1&pageSize=10");
+        const response = await fetch("https://coffeeshop.ngrok.app/api/categories?sortBy=CategoryId&isAscending=true&page=1&pageSize=10");
         const data = await response.json();
         console.log("Categories API Response:", data); // Log dữ liệu trả về
         setCategories(data.items || []); // Kiểm tra xem có "items" không

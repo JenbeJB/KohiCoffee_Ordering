@@ -11,6 +11,8 @@ import { cartActions } from '../../redux/slices/cart.slice';
 import useDocumentTitle from '../../utils/documentTitle';
 import { n_f } from '../../utils/helpers';
 import { FaTrash } from 'react-icons/fa';
+import axios from 'axios';
+import { axiosInstance } from '../../axios/Axios';
 
 function Cart() {
   const cartRedux = useSelector((state) => state.cart);
@@ -20,7 +22,6 @@ function Cart() {
   const productId = searchParams.get("productId");
   const [isLoading, setIsLoading] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [product, setProduct] = useState(null);
 
   const [form, setForm] = useState({
@@ -36,7 +37,7 @@ function Cart() {
       if (!productId) return;
       try {
         setIsLoading(true);
-        const response = await fetch(`https://coffeeshop.ngrok.app/api/product/${productId}`);
+        const response = await fetch(`https://coffeeshop.ngrok.app/api/products/${productId}`);
         const data = await response.json();
         if (response.ok) {
           setProduct(data);
@@ -59,44 +60,48 @@ function Cart() {
     setForm((prev) => ({ ...prev, payment: e.target.value }));
   };
 
-  const handleVerify = () => {
-    if (!form.kohiUserName || !form.kohiPassword) {
-      toast.error("❌ Vui lòng nhập đầy đủ thông tin đăng nhập.");
-      return;
-    }
-    if (form.kohiUserName === "testuser" && form.kohiPassword === "123456") {
-      setIsVerified(true);
-      toast.success("✅ Xác thực thành công!");
-    } else {
-      setIsVerified(false);
-      toast.error("❌ Sai thông tin đăng nhập, vui lòng thử lại.");
+  const handleVNPayPayment = async () => {
+    if (!product) return;
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.post('payments/vnpay', {
+        amount: product.price,
+      });
+      if (response.data?.paymentUrl) {
+        window.location.href = response.data.paymentUrl;
+      } else {
+        toast.error("Không thể tạo link thanh toán.");
+      }
+    } catch (error) {
+      console.error("Lỗi thanh toán VNPay:", error);
+      toast.error("Lỗi khi thực hiện thanh toán VNPay.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const payHandler = () => {
-    if (!form.payment || (form.payment === "1" && (!form.kohiUserName || !form.kohiPassword || !isVerified))) {
+    if (form.payment === "2") {
+      handleVNPayPayment();
+      return;
+    }
+
+    if (form.payment === "1" && (!form.kohiUserName || !form.kohiPassword || !isVerified)) {
       return;
     }
 
     setIsLoading(true);
     setTimeout(() => {
       const randomOrderId = `#${Math.floor(100000 + Math.random() * 900000)}`;
-      if (form.payment === "1") {
-        // Thanh toán bằng Ví KOHI
-        toast.success("Giao dịch thành công!");
-        dispatch(cartActions.resetCart());
-        navigate("/successful", {
-          state: {
-            orderId: randomOrderId,
-            amount: `${n_f(product?.price)} VND`,
-            paymentMethod: "Ví KOHI",
-          },
-        });
-      } else if (form.payment === "2") {
-        // Chuyển sang trang thanh toán ngân hàng
-        const paymentUrl = `https://banking-payment.com/pay?amount=${product?.price}`;
-        window.location.href = paymentUrl;
-      }
+      toast.success("Giao dịch thành công!");
+      dispatch(cartActions.resetCart());
+      navigate("/successful", {
+        state: {
+          orderId: randomOrderId,
+          amount: `${n_f(product?.price)} VND`,
+          paymentMethod: form.payment === "1" ? "Ví KOHI" : "VNPay",
+        },
+      });
       setIsLoading(false);
     }, 2000);
   };
@@ -128,15 +133,8 @@ function Cart() {
             <label className="flex items-center gap-2">
               <input type="radio" name="payment" value="1" checked={form.payment === "1"} onChange={handlePaymentChange} disabled={!product} /> Ví KOHI
             </label>
-            {form.payment === "1" && product && (
-              <div className="space-y-2">
-                <input type="text" placeholder="User Name" className="w-full p-2 border rounded" name="kohiUserName" value={form.kohiUserName} onChange={(e) => setForm((prev) => ({ ...prev, kohiUserName: e.target.value }))} />
-                <input type="password" placeholder="Password" className="w-full p-2 border rounded" name="kohiPassword" value={form.kohiPassword} onChange={(e) => setForm((prev) => ({ ...prev, kohiPassword: e.target.value }))} />
-                <button className="w-full bg-blue-500 text-white p-2 rounded" onClick={handleVerify}>Xác thực</button>
-              </div>
-            )}
             <label className="flex items-center gap-2">
-              <input type="radio" name="payment" value="2" checked={form.payment === "2"} onChange={handlePaymentChange} disabled={!product} /> Bank account
+              <input type="radio" name="payment" value="2" checked={form.payment === "2"} onChange={handlePaymentChange} disabled={!product} /> VNPay
             </label>
           </div>
 
